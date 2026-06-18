@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySpot - Personal MP3 Player</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 90px);
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 240px;
+            background-color: #000000;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1DB954;
+            margin-bottom: 10px;
+        }
+
+        .nav-item {
+            color: #b3b3b3;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 5px 0;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: #ffffff;
+        }
+
+        .upload-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.04);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* Main Workspace */
+        .main-content {
+            flex: 1;
+            background: linear-gradient(to bottom, #222222, #121212);
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .track-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .track-item:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .track-item.playing {
+            color: #1DB954;
+        }
+
+        .track-number {
+            width: 35px;
+            color: #b3b3b3;
+        }
+
+        .track-info {
+            flex: 1;
+        }
+
+        /* Bottom Player Control Bar */
+        .player-bar {
+            height: 90px;
+            background-color: #181818;
+            border-top: 1px solid #282828;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .current-track {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 30%;
+        }
+
+        .album-art {
+            width: 56px;
+            height: 56px;
+            background-color: #282828;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #b3b3b3;
+        }
+
+        .track-details {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .now-playing-title {
+            font-size: 14px;
+            font-weight: 500;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .now-playing-artist {
+            font-size: 12px;
+            color: #b3b3b3;
+        }
+
+        .player-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 40%;
+        }
+
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn {
+            background: none;
+            border: none;
+            color: #b3b3b3;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .btn:hover {
+            color: #ffffff;
+        }
+
+        .btn-play {
+            background-color: #ffffff;
+            color: #000000;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .btn-play:hover {
+            transform: scale(1.05);
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .time {
+            font-size: 11px;
+            color: #b3b3b3;
+            width: 40px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background-color: #535353;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-filled {
+            height: 100%;
+            background-color: #b3b3b3;
+            border-radius: 2px;
+            width: 0%;
+        }
+
+        .progress-bar:hover .progress-filled {
+            background-color: #1DB954;
+        }
+
+        .volume-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 30%;
+            justify-content: flex-end;
+        }
+
+        .volume-bar {
+            width: 100px;
+            accent-color: #1DB954;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo">MySpot</div>
+            <div class="nav-item active">🏠 Home</div>
+            <div class="nav-item">📚 Your Library</div>
+            
+            <label for="file-input" class="upload-btn">Upload MP3s</label>
+            <input type="file" id="file-input" multiple accept="audio/mp3">
+        </div>
+
+        <div class="main-content">
+            <h2>Your Songs</h2>
+            <div class="track-list" id="track-list">
+                <p style="color: #b3b3b3;">Click "Upload MP3s" to select and load audio files from your computer.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="player-bar">
+        <div class="current-track">
+            <div class="album-art" id="player-art">🎵</div>
+            <div class="track-details">
+                <div class="now-playing-title" id="player-title">No Song Selected</div>
+                <div class="now-playing-artist">Local File</div>
+            </div>
+        </div>
+
+        <div class="player-controls">
+            <div class="control-buttons">
+                <button class="btn" id="btn-prev">⏮</button>
+                <button class="btn btn-play" id="btn-play">▶</button>
+                <button class="btn" id="btn-next">⏭</button>
+            </div>
+            <div class="progress-container">
+                <span class="time" id="time-current">0:00</span>
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress-filled" id="progress-filled"></div>
+                </div>
+                <span class="time" id="time-total">0:00</span>
+            </div>
+        </div>
+
+        <div class="volume-controls">
+            <span>🔊</span>
+            <input type="range" class="volume-bar" id="volume-bar" min="0" max="1" step="0.01" value="0.5">
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const trackListContainer = document.getElementById('track-list');
+        const btnPlay = document.getElementById('btn-play');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const playerTitle = document.getElementById('player-title');
+        const progressBar = document.getElementById('progress-bar');
+        const progressFilled = document.getElementById('progress-filled');
+        const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
+        const volumeBar = document.getElementById('volume-bar');
+
+        let playlist = [];
+        let currentIndex = -1;
+        let audio = new Audio();
+
+        // Handle uploaded MP3s
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            playlist = files.map(file => ({
+                name: file.name.replace('.mp3', ''),
+                url: URL.createObjectURL(file)
+            }));
+
+            renderPlaylist();
+            playTrack(0);
+        });
+
+        function renderPlaylist() {
+            trackListContainer.innerHTML = '';
+            playlist.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = `track-item ${index === currentIndex ? 'playing' : ''}`;
+                item.innerHTML = `
+                    <div class="track-number">${index + 1}</div>
+                    <div class="track-info">
+                        <strong>${track.name}</strong>
+                    </div>
+                `;
+                item.addEventListener('click', () => playTrack(index));
+                trackListContainer.appendChild(item);
+            });
+        }
+
+        function playTrack(index) {
+            if (index < 0 || index >= playlist.length) return;
+            
+            currentIndex = index;
+            audio.src = playlist[currentIndex].url;
+            playerTitle.textContent = playlist[currentIndex].name;
+            
+            renderPlaylist();
+            audio.play();
+            btnPlay.textContent = '⏸';
+        }
+
+        // Action: Play / Pause
+        btnPlay.addEventListener('click', () => {
+            if (playlist.length === 0) return;
+            if (audio.paused) {
+                audio.play();
+                btnPlay.textContent = '⏸';
+            } else {
+                audio.pause();
+                btnPlay.textContent = '▶';
+            }
+        });
+
+        // Action: Skip Next
+        btnNext.addEventListener('click', () => {
+            if (playlist.length === 0) return;
+            let nextIndex = currentIndex + 1;
+            if (nextIndex >= playlist.length) nextIndex = 0;
+            playTrack(nextIndex);
+        });
+
+        // Action: Skip Previous
+        btnPrev.addEventListener('click', () => {
+            if (playlist.length === 0) return;
+            let prevIndex = currentIndex - 1;
+            if (prevIndex < 0) prevIndex = playlist.length - 1;
+            playTrack(prevIndex);
+        });
+
+        // Updates progress bar fluidly
+        audio.addEventListener('timeupdate', () => {
+            if (!audio.duration) return;
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressFilled.style.width = `${percent}%`;
+            timeCurrent.textContent = formatTime(audio.currentTime);
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            timeTotal.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', () => {
+            btnNext.click();
+        });
+
+        // Click to seek functionality
+        progressBar.addEventListener('click', (e) => {
+            if (!audio.duration) return;
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            audio.currentTime = (clickX / width) * audio.duration;
+        });
+
+        // Volume slider update
+        volumeBar.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+    </script>
+</body>
+</html>
